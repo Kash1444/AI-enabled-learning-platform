@@ -1,0 +1,718 @@
+/* =========================================================
+   NSSTA PROGRAMS PAGE
+========================================================= */
+
+.nssta-page {
+  min-height: 100%;
+  padding: 34px 38px 60px;
+  background: #f7f9fc;
+  color: #101828;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.nssta-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 30px;
+  margin-bottom: 28px;
+}
+
+.nssta-breadcrumb {
+  font-size: 13px;
+  color: #667085;
+  margin-bottom: 12px;
+}
+
+.nssta-header h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.nssta-header p {
+  margin: 0;
+  color: #667085;
+  font-size: 15px;
+}
+
+.nssta-header-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 14px;
+}
+
+.nssta-header-badge > span {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #eef4ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+}
+
+.nssta-header-badge strong,
+.nssta-header-badge small {
+  display: block;
+}
+
+.nssta-header-badge strong {
+  font-size: 14px;
+}
+
+.nssta-header-badge small {
+  margin-top: 3px;
+  color: #667085;
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   AI BANNER
+========================================================= */
+
+.nssta-ai-banner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 24px;
+  margin-bottom: 22px;
+  background: linear-gradient(100deg, #eef5ff, #f7faff);
+  border: 1px solid #b9d4ff;
+  border-radius: 16px;
+}
+
+.nssta-ai-icon {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 23px;
+}
+
+.nssta-ai-content {
+  flex: 1;
+}
+
+.nssta-ai-label {
+  margin-bottom: 5px;
+  color: #2563eb;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.nssta-ai-content h2 {
+  margin: 0 0 5px;
+  font-size: 18px;
+}
+
+.nssta-ai-content p {
+  margin: 0;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.nssta-ai-button,
+.nssta-primary-button {
+  border: none;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 11px 17px;
+  border-radius: 9px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.nssta-ai-button:hover,
+.nssta-primary-button:hover {
+  background: #1d4ed8;
+}
+
+
+/* =========================================================
+   MY LEARNING SUMMARY
+========================================================= */
+
+.nssta-learning-summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 22px;
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 15px;
+  margin-bottom: 34px;
+}
+
+.nssta-summary-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #eef4ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+}
+
+.nssta-summary-content {
+  min-width: 250px;
+  flex: 1;
+}
+
+.nssta-summary-content span {
+  display: block;
+  color: #667085;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.nssta-summary-content strong {
+  display: block;
+  margin: 5px 0 3px;
+  font-size: 16px;
+}
+
+.nssta-summary-content small {
+  color: #667085;
+  font-size: 12px;
+}
+
+.nssta-summary-progress {
+  width: 300px;
+}
+
+.nssta-progress-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.nssta-progress-track {
+  height: 7px;
+  border-radius: 10px;
+  background: #eaecf0;
+  overflow: hidden;
+}
+
+.nssta-progress-fill {
+  height: 100%;
+  background: #2563eb;
+  border-radius: inherit;
+}
+
+.nssta-summary-progress small {
+  display: block;
+  margin-top: 6px;
+  color: #98a2b3;
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   SECTION HEADER
+========================================================= */
+
+.nssta-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+.nssta-section-label {
+  color: #2563eb;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.nssta-section-heading h2 {
+  margin: 4px 0 5px;
+  font-size: 22px;
+}
+
+.nssta-section-heading p {
+  margin: 0;
+  color: #667085;
+  font-size: 13px;
+}
+
+.nssta-match {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   FEATURED PROGRAM
+========================================================= */
+
+.nssta-featured-card {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  gap: 24px;
+  padding: 25px;
+  background: #ffffff;
+  border: 1px solid #b9d4ff;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(37, 99, 235, 0.06);
+  margin-bottom: 38px;
+}
+
+.nssta-featured-left {
+  display: flex;
+  gap: 18px;
+}
+
+.nssta-program-icon {
+  flex-shrink: 0;
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  background: #eef4ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+}
+
+.nssta-program-meta {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.nssta-provider {
+  padding: 5px 9px;
+  background: #f2f4f7;
+  color: #475467;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.nssta-high-priority {
+  padding: 5px 9px;
+  background: #fff1f0;
+  color: #f04438;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.nssta-featured-left h3 {
+  margin: 0 0 8px;
+  font-size: 19px;
+}
+
+.nssta-featured-left p {
+  max-width: 680px;
+  margin: 0 0 17px;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.nssta-program-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  color: #667085;
+  font-size: 12px;
+}
+
+.nssta-featured-right {
+  padding-left: 24px;
+  border-left: 1px solid #eaecf0;
+}
+
+.nssta-gap-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 13px;
+}
+
+.nssta-gap-box span {
+  color: #667085;
+  font-size: 12px;
+}
+
+.nssta-gap-box strong {
+  color: #f04438;
+  font-size: 22px;
+}
+
+.nssta-gap-box small {
+  color: #98a2b3;
+  font-size: 11px;
+}
+
+.nssta-reason {
+  padding: 13px;
+  background: #f8fafc;
+  border-radius: 9px;
+  margin-bottom: 14px;
+}
+
+.nssta-reason span {
+  color: #2563eb;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.nssta-reason p {
+  margin: 5px 0 0;
+  color: #667085;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.nssta-primary-button {
+  width: 100%;
+}
+
+
+/* =========================================================
+   CATALOG
+========================================================= */
+
+.nssta-catalog {
+  margin-top: 10px;
+}
+
+.nssta-catalog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.nssta-catalog-header h2 {
+  margin: 0 0 5px;
+  font-size: 22px;
+}
+
+.nssta-catalog-header p {
+  margin: 0;
+  color: #667085;
+  font-size: 13px;
+}
+
+.nssta-search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 250px;
+  padding: 9px 12px;
+  background: #ffffff;
+  border: 1px solid #d0d5dd;
+  border-radius: 9px;
+}
+
+.nssta-search-wrapper span {
+  color: #98a2b3;
+}
+
+.nssta-search-wrapper input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 12px;
+  color: #101828;
+}
+
+
+/* =========================================================
+   CATEGORY FILTERS
+========================================================= */
+
+.nssta-category-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.nssta-category {
+  padding: 8px 13px;
+  border: 1px solid #d0d5dd;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #475467;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.nssta-category:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.nssta-category.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   PROGRAM GRID
+========================================================= */
+
+.nssta-program-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.nssta-program-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 345px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 14px;
+  transition: 0.2s ease;
+}
+
+.nssta-program-card:hover {
+  border-color: #b9d4ff;
+  box-shadow: 0 5px 18px rgba(16, 24, 40, 0.06);
+  transform: translateY(-2px);
+}
+
+.nssta-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.nssta-small-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #eef4ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nssta-provider-badge {
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #f2f4f7;
+  color: #475467;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.nssta-category-tag {
+  color: #2563eb;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.nssta-program-card h3 {
+  margin: 7px 0 8px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.nssta-program-card p {
+  margin: 0 0 16px;
+  color: #667085;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.nssta-card-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #eaecf0;
+  color: #667085;
+  font-size: 10px;
+}
+
+.nssta-skill-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 13px 0;
+}
+
+.nssta-skill-row span {
+  color: #98a2b3;
+  font-size: 10px;
+}
+
+.nssta-skill-row strong {
+  color: #344054;
+  font-size: 11px;
+}
+
+.nssta-outline-button {
+  width: 100%;
+  margin-top: auto;
+  padding: 9px;
+  border: 1px solid #2563eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2563eb;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nssta-outline-button:hover {
+  background: #eef4ff;
+}
+
+
+/* =========================================================
+   DEMO NOTE
+========================================================= */
+
+.nssta-demo-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-top: 28px;
+  padding: 14px 16px;
+  background: #f9fafb;
+  border: 1px solid #eaecf0;
+  border-radius: 10px;
+}
+
+.nssta-demo-note > span {
+  color: #12b76a;
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.nssta-demo-note strong {
+  font-size: 11px;
+}
+
+.nssta-demo-note p {
+  margin: 4px 0 0;
+  color: #667085;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .nssta-program-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .nssta-featured-card {
+    grid-template-columns: 1fr;
+  }
+
+  .nssta-featured-right {
+    padding-left: 0;
+    padding-top: 20px;
+    border-left: none;
+    border-top: 1px solid #eaecf0;
+  }
+
+}
+
+
+@media (max-width: 750px) {
+
+  .nssta-page {
+    padding: 25px 20px 45px;
+  }
+
+  .nssta-header {
+    flex-direction: column;
+  }
+
+  .nssta-header-badge {
+    width: 100%;
+  }
+
+  .nssta-ai-banner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nssta-ai-button {
+    width: 100%;
+  }
+
+  .nssta-learning-summary {
+    flex-wrap: wrap;
+  }
+
+  .nssta-summary-progress {
+    width: 100%;
+  }
+
+  .nssta-catalog-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .nssta-search-wrapper {
+    width: auto;
+  }
+
+}
+
+
+@media (max-width: 550px) {
+
+  .nssta-program-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nssta-featured-left {
+    flex-direction: column;
+  }
+
+  .nssta-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+}
