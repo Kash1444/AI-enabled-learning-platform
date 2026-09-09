@@ -36,7 +36,32 @@ function EmployeeDashboard() {
           </p>
         </div>
 
-        
+        <div className="dashboard-header-right">
+
+          <button className="notification-button">
+            🔔
+            <span className="notification-dot"></span>
+          </button>
+
+          <div className="profile-mini">
+
+            <div className="avatar">
+              {getInitials(employeeProfile.name)}
+            </div>
+
+            <div>
+              <div className="profile-name">
+                {employeeProfile.name}
+              </div>
+
+              <div className="profile-role">
+                {employeeProfile.designation}
+              </div>
+            </div>
+
+          </div>
+
+        </div>
 
       </header>
 
