@@ -1,4 +1,0 @@
-tensorflow>=2.15
-numpy
-pillow
-scikit-learn
