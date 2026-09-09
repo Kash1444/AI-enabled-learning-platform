@@ -1,0 +1,516 @@
+/* =========================================================
+   SKILL GAPS PAGE
+========================================================= */
+
+.skill-gaps-page {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.skill-gaps-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.skill-gaps-breadcrumb {
+  font-size: 13px;
+  color: #667085;
+  margin-bottom: 10px;
+}
+
+.skill-gaps-header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  color: #101828;
+}
+
+.skill-gaps-header p {
+  margin: 8px 0 0;
+  font-size: 15px;
+  color: #667085;
+}
+
+.skill-gaps-learning-button {
+  border: none;
+  background: #2563eb;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.skill-gaps-learning-button:hover {
+  background: #1d4ed8;
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.skill-gap-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.gap-summary-card {
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.gap-summary-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  flex-shrink: 0;
+}
+
+.gap-summary-icon.blue {
+  background: #eff6ff;
+}
+
+.gap-summary-icon.red {
+  background: #fef3f2;
+}
+
+.gap-summary-icon.orange {
+  background: #fffaeb;
+}
+
+.gap-summary-icon.purple {
+  background: #f4f3ff;
+}
+
+.gap-summary-card span {
+  display: block;
+  font-size: 13px;
+  color: #667085;
+  margin-bottom: 4px;
+}
+
+.gap-summary-card strong {
+  display: block;
+  font-size: 25px;
+  color: #101828;
+  line-height: 1.2;
+}
+
+.gap-summary-card small {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #98a2b3;
+}
+
+
+/* =========================================================
+   AI BANNER
+========================================================= */
+
+.ai-gap-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 14px;
+  padding: 22px 24px;
+  margin-bottom: 32px;
+}
+
+.ai-gap-banner-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  flex-shrink: 0;
+}
+
+.ai-gap-banner h2 {
+  margin: 0 0 5px;
+  font-size: 17px;
+  color: #101828;
+}
+
+.ai-gap-banner p {
+  margin: 0;
+  color: #475467;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   SECTION HEADER
+========================================================= */
+
+.skill-gap-section {
+  margin-bottom: 30px;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #101828;
+}
+
+.section-heading p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #667085;
+}
+
+.gap-legend {
+  display: flex;
+  gap: 20px;
+  font-size: 13px;
+  color: #667085;
+}
+
+.gap-legend span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.gap-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-high {
+  background: #f04438;
+}
+
+.legend-medium {
+  background: #f79009;
+}
+
+
+/* =========================================================
+   GAP GRID
+========================================================= */
+
+.skill-gap-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.skill-gap-card {
+  background: #ffffff;
+  border: 1px solid #eaecf0;
+  border-radius: 14px;
+  padding: 24px;
+  transition: 0.2s ease;
+}
+
+.skill-gap-card:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+}
+
+
+/* =========================================================
+   CARD HEADER
+========================================================= */
+
+.skill-gap-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.skill-gap-card-header h3 {
+  margin: 0 0 9px;
+  font-size: 18px;
+  color: #101828;
+}
+
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.priority-high {
+  color: #b42318;
+  background: #fef3f2;
+}
+
+.priority-medium {
+  color: #b54708;
+  background: #fffaeb;
+}
+
+.priority-low {
+  color: #027a48;
+  background: #ecfdf3;
+}
+
+.gap-number {
+  font-size: 25px;
+  font-weight: 700;
+  color: #f04438;
+}
+
+.skill-gap-description {
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 18px 0 22px;
+}
+
+
+/* =========================================================
+   LEVELS
+========================================================= */
+
+.gap-level-row {
+  margin-bottom: 16px;
+}
+
+.gap-level-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+
+.gap-level-label span {
+  color: #667085;
+  font-size: 13px;
+}
+
+.gap-level-label strong {
+  color: #101828;
+  font-size: 13px;
+}
+
+.gap-progress-track {
+  height: 8px;
+  background: #eaecf0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.gap-progress-current {
+  height: 100%;
+  background: #2563eb;
+  border-radius: 10px;
+}
+
+.gap-progress-track.required {
+  background: #f2f4f7;
+}
+
+.gap-progress-required {
+  height: 100%;
+  background: #101828;
+  border-radius: 10px;
+}
+
+
+/* =========================================================
+   GAP RESULT
+========================================================= */
+
+.gap-result {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  margin-top: 4px;
+  border-top: 1px solid #eaecf0;
+}
+
+.gap-result span {
+  font-size: 13px;
+  color: #667085;
+}
+
+.gap-result strong {
+  font-size: 15px;
+  color: #f04438;
+}
+
+
+/* =========================================================
+   AI RECOMMENDATION
+========================================================= */
+
+.gap-recommendation {
+  background: #f8fafc;
+  border: 1px solid #eaecf0;
+  border-radius: 9px;
+  padding: 14px;
+  margin-top: 6px;
+}
+
+.recommendation-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #175cd3;
+  margin-bottom: 6px;
+}
+
+.gap-recommendation p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #475467;
+}
+
+
+/* =========================================================
+   ACTION BUTTON
+========================================================= */
+
+.gap-action-button {
+  width: 100%;
+  border: 1px solid #2563eb;
+  background: white;
+  color: #175cd3;
+  padding: 11px 15px;
+  border-radius: 8px;
+  margin-top: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gap-action-button:hover {
+  background: #eff6ff;
+}
+
+
+/* =========================================================
+   BOTTOM CTA
+========================================================= */
+
+.skill-gap-cta {
+  background: #101828;
+  border-radius: 14px;
+  padding: 26px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.skill-gap-cta h2 {
+  margin: 0;
+  color: white;
+  font-size: 20px;
+}
+
+.skill-gap-cta p {
+  margin: 7px 0 0;
+  color: #98a2b3;
+  font-size: 13px;
+}
+
+.skill-gap-cta button {
+  border: none;
+  background: #2563eb;
+  color: white;
+  padding: 12px 19px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.skill-gap-cta button:hover {
+  background: #1d4ed8;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .skill-gap-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+
+@media (max-width: 800px) {
+
+  .skill-gap-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .skill-gaps-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+}
+
+
+@media (max-width: 550px) {
+
+  .skill-gap-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .skill-gap-card {
+    padding: 18px;
+  }
+
+  .skill-gap-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+}
