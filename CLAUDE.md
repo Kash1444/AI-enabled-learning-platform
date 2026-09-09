@@ -10,9 +10,26 @@ alerts to a dashboard.
 
 ## Status
 
-Empty repo, nothing built yet. This scaffold is the starting point. Every module below is a stub —
-treat the `CLAUDE.md` in each folder as that module's brief, and build in the order under
+Build-sequence phases 1–3 are done — the mock end-to-end loop runs:
+
+- `firmware/` — IR sensor → lid servo state machine (phase 1). Written but **not compiled**:
+  needs PlatformIO and real hardware to verify.
+- `backend/` — telemetry, classification proxy, and alert endpoints over a swappable store
+  (in-memory by default, Firestore when a service account is configured). Verified running.
+- `dashboard/` — renders overall fill level, per-bin cards, and the active-alert panel against
+  those endpoints. Verified rendering.
+
+Next up is phase 4 (`ai-vision/` — still a stub) and then phase 5 wiring. The classifier the
+backend calls is a **placeholder** (`backend/src/services/classifier.js`) that ignores the image
+and derives a label from the moisture/metal sensors — it exists so firmware has a stable contract
+to code against.
+
+Treat the `CLAUDE.md` in each folder as that module's brief, and build in the order under
 "Build sequence" rather than trying to complete every module before wiring anything together.
+
+> **Note:** this repo also contains an unrelated `frontend/` React app (an AI-enabled learning
+> platform) from a separate effort, plus `innovamesh-sih-scaffold.zip`. Neither is part of
+> InnovaMesh — leave them alone unless you're deliberately cleaning up the repo split.
 
 ## Architecture
 
