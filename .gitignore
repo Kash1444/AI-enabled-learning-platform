@@ -1,9 +1,13 @@
 # Node / backend
 node_modules/
 npm-debug.log*
+yarn-error.log*
 dist/
 .env
 .env.local
+.env.*.local
+
+# Lockfiles are NOT ignored on purpose - a 6-person team needs reproducible installs.
 
 # Python / ai-vision
 __pycache__/
@@ -12,8 +16,14 @@ __pycache__/
 venv/
 *.egg-info/
 .ipynb_checkpoints/
+
+# Trained models are large binaries - export them, don't commit them.
+# See ai-vision/CLAUDE.md. Covers SavedModel directories as well as single-file exports.
+ai-vision/models/
 models/*.h5
 models/*.tflite
+*.tflite
+*.h5
 
 # Rust (firmware, if/when introduced)
 target/
@@ -21,8 +31,12 @@ Cargo.lock
 
 # PlatformIO / Arduino (firmware, C++ path)
 .pio/
+.pioenvs/
+.piolibdeps/
 .vscode/
 *.o
+*.elf
+*.bin
 
 # Firebase
 .firebase/
@@ -32,11 +46,15 @@ serviceAccountKey.json
 # OS / editor
 .DS_Store
 Thumbs.db
+desktop.ini
 *.swp
+*~
 .idea/
 
 # Hardware design exports (keep source files, not renders)
 hardware-design/*.png
 hardware-design/*.stl.bak
 
-innovamesh-sih-scafford.zip
+# Scaffold archive - its contents are already unpacked into the module folders.
+# (Was misspelled "scafford", so it never matched and the zip got committed.)
+innovamesh-sih-scaffold.zip
