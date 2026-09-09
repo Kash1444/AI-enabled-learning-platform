@@ -6,3 +6,6 @@ Desktop\AI-enabled-learning-platform\frontend
 
 cmd :
 npm run dev
+
+url:
+http://localhost:5173
