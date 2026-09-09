@@ -1,6 +1,6 @@
-# inga ella commands um podunga so that new user can easily run the code
+### inga ella commands um podunga so that new user can easily run the code
 
-# frontend
+### -> frontend
 directory:
 Desktop\AI-enabled-learning-platform\frontend
 
