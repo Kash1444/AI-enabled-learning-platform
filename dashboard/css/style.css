@@ -1,9 +1,11 @@
 :root {
   --ok: #1d9e75;
   --alert: #e24b4a;
+  --warn: #d98324;
   --bg: #f7f7f5;
   --card-bg: #ffffff;
   --border: #ddd;
+  --muted: #666;
 }
 
 * {
@@ -17,9 +19,26 @@ body {
   color: #222;
 }
 
+.muted {
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- header */
+
 header {
   padding: 24px;
   border-bottom: 1px solid var(--border);
+  background: var(--card-bg);
+}
+
+.header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 header h1 {
@@ -28,8 +47,33 @@ header h1 {
 
 .subtitle {
   margin: 4px 0 0;
-  color: #666;
+  color: var(--muted);
 }
+
+.connection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.dot.online {
+  background: var(--ok);
+}
+
+.dot.offline {
+  background: var(--alert);
+}
+
+/* --------------------------------------------------------------- layout */
 
 main {
   padding: 24px;
@@ -37,16 +81,114 @@ main {
   margin: 0 auto;
 }
 
-.overall-level {
-  text-align: center;
-  margin-bottom: 32px;
+main h2 {
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* -------------------------------------------------------------- summary */
+
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.overall-level h2 {
+  margin: 0;
 }
 
 #overall-percent {
   font-size: 48px;
   font-weight: bold;
-  margin: 8px 0;
+  margin: 8px 0 4px;
+  line-height: 1;
 }
+
+#overall-detail {
+  margin: 0;
+  font-size: 13px;
+}
+
+.summary-counts {
+  display: flex;
+  gap: 32px;
+}
+
+.count {
+  text-align: center;
+}
+
+.count span {
+  display: block;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.count small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.count-alert {
+  color: var(--alert);
+}
+
+/* --------------------------------------------------------------- alerts */
+
+.alerts {
+  margin-bottom: 24px;
+}
+
+.alert-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #fdecec;
+  border: 1px solid var(--alert);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+}
+
+.alert-row small {
+  display: block;
+  color: #8a3b3a;
+  margin-top: 2px;
+}
+
+.alert-row button {
+  border: 1px solid var(--alert);
+  background: transparent;
+  color: var(--alert);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.alert-row button:hover:not(:disabled) {
+  background: var(--alert);
+  color: #fff;
+}
+
+.alert-row button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ----------------------------------------------------------- bin cards */
 
 .bin-list {
   display: grid;
@@ -61,6 +203,13 @@ main {
   padding: 16px;
 }
 
+.bin-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .bin-card h3 {
   margin: 0 0 8px;
   font-size: 16px;
@@ -73,6 +222,7 @@ main {
   font-size: 12px;
   font-weight: bold;
   color: white;
+  white-space: nowrap;
 }
 
 .bin-card .status.ok {
@@ -81,4 +231,59 @@ main {
 
 .bin-card .status.alert {
   background: var(--alert);
+}
+
+.fill-bar {
+  height: 8px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 12px 0 6px;
+}
+
+.fill-level {
+  height: 100%;
+  background: var(--ok);
+  transition: width 0.4s ease;
+}
+
+.fill-level.alert {
+  background: var(--alert);
+}
+
+.fill-text {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+  min-height: 20px;
+}
+
+.type {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.type.bio {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.type.non-bio {
+  border-color: #4a6fa5;
+  color: #4a6fa5;
+}
+
+.type.hazardous {
+  border-color: var(--warn);
+  color: var(--warn);
 }

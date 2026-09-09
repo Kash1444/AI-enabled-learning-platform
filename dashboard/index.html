@@ -8,20 +8,48 @@
 </head>
 <body>
   <header>
-    <h1>InnovaMesh</h1>
-    <p class="subtitle">Smart waste segregation monitoring</p>
+    <div class="header-inner">
+      <div>
+        <h1>InnovaMesh</h1>
+        <p class="subtitle">Smart waste segregation monitoring</p>
+      </div>
+
+      <div class="connection">
+        <span id="connection-dot" class="dot"></span>
+        <span id="connection-label">Connecting…</span>
+      </div>
+    </div>
   </header>
 
   <main>
-    <section class="overall-level">
-      <h2>Overall bin level</h2>
-      <p id="overall-percent">--%</p>
+    <section class="summary">
+      <div class="overall-level">
+        <h2>Overall bin level</h2>
+        <p id="overall-percent">--%</p>
+        <p id="overall-detail" class="muted">Waiting for data…</p>
+      </div>
+
+      <div class="summary-counts">
+        <div class="count">
+          <span id="count-bins">--</span>
+          <small>Bins monitored</small>
+        </div>
+        <div class="count">
+          <span id="count-alerts" class="count-alert">--</span>
+          <small>Bins in alert</small>
+        </div>
+      </div>
+    </section>
+
+    <section id="alerts-section" class="alerts" hidden>
+      <h2>Active alerts</h2>
+      <div id="alert-list"></div>
     </section>
 
     <section class="bins">
       <h2>Bins</h2>
       <div id="bin-list" class="bin-list">
-        <!-- bin cards injected by js/app.js -->
+        <p class="muted">Loading bins…</p>
       </div>
     </section>
   </main>
