@@ -1,8 +1,44 @@
 import { useState } from "react";
 import "./GenerateAssessment.css";
+import { generateAssessment } from "../../services/assessmentService";
 
 function GenerateAssessment() {
   const [generated, setGenerated] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const [questions, setQuestions] = useState([]);
+
+  const handleGenerate = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await generateAssessment({
+        materialId: "demo-material",
+        competency: "Sampling Methodology",
+        domain: "Statistical",
+        numQuestions: 10,
+        difficulty: "Intermediate",
+        employeeId: "EMP001",
+      });
+
+      const generatedQuestions =
+        response?.questions ||
+        response?.assessment?.questions ||
+        [];
+
+      setQuestions(generatedQuestions);
+      setGenerated(true);
+    } catch (err) {
+      console.error("Assessment generation error:", err);
+      setError(
+        "Unable to generate the assessment. Please make sure the AI backend is running."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="generator-page">
@@ -38,6 +74,7 @@ function GenerateAssessment() {
           </select>
 
           <label>Difficulty</label>
+
           <div className="difficulty-options">
             <button>Easy</button>
             <button className="selected">Intermediate</button>
@@ -46,10 +83,17 @@ function GenerateAssessment() {
 
           <button
             className="generate-button"
-            onClick={() => setGenerated(true)}
+            onClick={handleGenerate}
+            disabled={loading}
           >
-            ✨ Generate with AI
+            {loading ? "Generating..." : "✨ Generate with AI"}
           </button>
+
+          {error && (
+            <p style={{ marginTop: "15px" }}>
+              {error}
+            </p>
+          )}
         </section>
 
         <section className="generator-preview">
@@ -69,21 +113,45 @@ function GenerateAssessment() {
                   <span>GENERATED</span>
                   <h2>Sampling Methodology Assessment</h2>
                 </div>
-                <strong>10 Questions</strong>
+
+                <strong>
+                  {questions.length || 10} Questions
+                </strong>
               </div>
 
-              <div className="generated-question">
-                <span>Question 1</span>
-                <h3>
-                  Which sampling method gives every population member an
-                  equal probability of selection?
-                </h3>
+              {questions.length > 0 ? (
+                questions.map((question, index) => (
+                  <div
+                    className="generated-question"
+                    key={question.id || index}
+                  >
+                    <span>Question {index + 1}</span>
 
-                <p>A. Convenience Sampling</p>
-                <p>B. Simple Random Sampling ✓</p>
-                <p>C. Purposive Sampling</p>
-                <p>D. Snowball Sampling</p>
-              </div>
+                    <h3>
+                      {question.question ||
+                        question.text ||
+                        "Generated question"}
+                    </h3>
+
+                    {question.options?.map((option, optionIndex) => (
+                      <p key={optionIndex}>
+                        {String.fromCharCode(65 + optionIndex)}.{" "}
+                        {typeof option === "string"
+                          ? option
+                          : option.text || option.label}
+                      </p>
+                    ))}
+                  </div>
+                ))
+              ) : (
+                <div className="generated-question">
+                  <span>AI RESPONSE</span>
+                  <h3>
+                    The backend generated an assessment, but its
+                    question format needs to be mapped to the UI.
+                  </h3>
+                </div>
+              )}
 
               <button className="publish-button">
                 Publish Assessment

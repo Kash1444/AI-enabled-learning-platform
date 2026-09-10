@@ -1,0 +1,25 @@
+# Minimal install for a fast, fully offline DEMO_MODE setup.
+# Skips sentence-transformers (torch) and openai - RAG automatically falls
+# back to the dependency-free hash embedding provider, and the LLM
+# abstraction falls back to the offline DemoLLMProvider.
+#
+# Install with:
+#   pip install -r requirements-minimal.txt
+#
+# Then set in .env:
+#   EMBEDDING_PROVIDER=hash
+#   DEMO_MODE=true
+
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+python-multipart==0.0.19
+pydantic==2.10.4
+pydantic-settings==2.7.0
+SQLAlchemy==2.0.36
+PyMuPDF==1.25.1
+python-docx==1.1.2
+python-pptx==1.0.2
+chromadb==0.5.23
+pytest==8.3.4
+httpx==0.28.1
+python-dotenv==1.0.1

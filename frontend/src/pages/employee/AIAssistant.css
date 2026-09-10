@@ -1,115 +1,149 @@
-import { useState } from "react";
-import "./AIAssistant.css";
-
-function AIAssistant() {
-  const [message, setMessage] = useState("");
-
-  const suggestions = [
-    "What skills should I improve next?",
-    "Recommend a course for sampling methodology",
-    "Explain my current skill gaps",
-    "How can I improve my R programming skills?",
-  ];
-
-  const [messages, setMessages] = useState([
-    {
-      sender: "ai",
-      text: "Hello Arun! 👋 I'm your AI Learning Assistant. I can help you understand your competency profile, skill gaps, learning recommendations and assessments.",
-    },
-  ]);
-
-  const sendMessage = (text = message) => {
-    if (!text.trim()) return;
-
-    setMessages((prev) => [
-      ...prev,
-      { sender: "user", text },
-      {
-        sender: "ai",
-        text: "Based on your current competency profile, I recommend focusing on Sampling Methodology and Statistical Programming with R. These are currently your highest-priority skill gaps.",
-      },
-    ]);
-
-    setMessage("");
-  };
-
-  return (
-    <div className="assistant-page">
-      <div className="assistant-header">
-        <div>
-          <span>AI LEARNING ASSISTANT</span>
-          <h1>Your AI Learning Coach</h1>
-          <p>
-            Get personalized guidance based on your competency profile.
-          </p>
-        </div>
-
-        <div className="assistant-status">
-          <span></span>
-          AI Online
-        </div>
-      </div>
-
-      <div className="assistant-layout">
-        <aside className="assistant-sidebar">
-          <h3>Quick Questions</h3>
-
-          {suggestions.map((item) => (
-            <button key={item} onClick={() => sendMessage(item)}>
-              {item}
-            </button>
-          ))}
-
-          <div className="assistant-context">
-            <strong>AI Context</strong>
-            <p>Profile</p>
-            <p>Competencies</p>
-            <p>Skill Gaps</p>
-            <p>Learning History</p>
-          </div>
-        </aside>
-
-        <section className="chat-container">
-          <div className="chat-messages">
-            {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`chat-message ${msg.sender}`}
-              >
-                <div className="message-avatar">
-                  {msg.sender === "ai" ? "AI" : "AK"}
-                </div>
-
-                <div className="message-bubble">
-                  {msg.text}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="chat-input-area">
-            <input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") sendMessage();
-              }}
-              placeholder="Ask your AI learning assistant..."
-            />
-
-            <button onClick={() => sendMessage()}>
-              Send
-            </button>
-          </div>
-        </section>
-      </div>
-
-      <div className="assistant-demo-note">
-        <strong>Demo Mode:</strong> AI responses are currently simulated.
-        Gemini/LLM integration will be connected through the backend later.
-      </div>
-    </div>
-  );
+.assistant-page {
+  padding: 32px;
 }
 
-export default AIAssistant;
+.assistant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.assistant-header span {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.assistant-header h1 {
+  margin: 8px 0;
+}
+
+.assistant-header p {
+  margin: 0;
+}
+
+.assistant-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.assistant-status span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.assistant-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  min-height: 550px;
+}
+
+.assistant-sidebar,
+.chat-container {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.assistant-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.assistant-sidebar button {
+  text-align: left;
+  padding: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+}
+
+.assistant-context {
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+.assistant-context p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.chat-message {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.chat-message.user {
+  flex-direction: row-reverse;
+}
+
+.message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  line-height: 1.5;
+}
+
+.chat-input-area {
+  display: flex;
+  gap: 10px;
+  padding-top: 15px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.chat-input-area input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.chat-input-area button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.assistant-demo-note {
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 8px;
+}
+
+@media (max-width: 800px) {
+  .assistant-layout {
+    grid-template-columns: 1fr;
+  }
+}
