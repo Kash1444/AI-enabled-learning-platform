@@ -7,7 +7,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.database import Base
+from app.core.database import Base, utcnow
 
 
 class Competency(Base):
@@ -44,7 +44,7 @@ class CompetencyScore(Base):
     skill: Mapped[str] = mapped_column(String(150), index=True)
     level: Mapped[float] = mapped_column(Float)  # 1.0 - 5.0
     source: Mapped[str] = mapped_column(String(40), default="assessment")  # assessment|seed|adaptive
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)
 
 
 class SkillGapRecord(Base):
@@ -66,4 +66,4 @@ class SkillGapRecord(Base):
     priority: Mapped[str] = mapped_column(String(20))  # High|Medium|Low
     description: Mapped[str] = mapped_column(Text, default="")
     recommended_action: Mapped[str] = mapped_column(Text, default="")
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

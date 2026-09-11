@@ -1,0 +1,21 @@
+# Build output
+target/
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Backend environment file - may hold real API keys.
+# frontend/.env is deliberately NOT ignored: it holds only the local
+# backend URL (no secrets) and committing it means a fresh clone can talk
+# to the backend without extra setup.
+ai-backend/.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml

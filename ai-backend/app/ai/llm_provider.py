@@ -101,6 +101,43 @@ class OpenAIProvider(LLMProvider):
         return _parse_json_with_repair(raw, self)
 
 
+class AnthropicProvider(LLMProvider):
+    """Calls the Anthropic Messages API (Claude)."""
+
+    def __init__(self) -> None:
+        if not settings.ANTHROPIC_API_KEY:
+            raise RuntimeError("ANTHROPIC_API_KEY is not set.")
+        try:
+            from anthropic import Anthropic
+        except ImportError as exc:  # pragma: no cover
+            raise RuntimeError("The 'anthropic' package is not installed.") from exc
+        self._client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+        self._model = settings.ANTHROPIC_MODEL
+
+    def generate(self, prompt: str, *, system: Optional[str] = None, max_tokens: int = 800) -> str:
+        kwargs: Dict[str, Any] = {
+            "model": self._model,
+            "max_tokens": max_tokens,
+            "temperature": 0.4,
+            "messages": [{"role": "user", "content": prompt}],
+        }
+        # Anthropic takes the system prompt as a top-level parameter rather
+        # than as a message with role="system".
+        if system:
+            kwargs["system"] = system
+        response = self._client.messages.create(**kwargs)
+        return "".join(block.text for block in response.content if block.type == "text")
+
+    def generate_json(
+        self, prompt: str, *, system: Optional[str] = None, max_tokens: int = 1500
+    ) -> Dict[str, Any]:
+        json_system = (system or "") + (
+            "\nRespond with ONLY a single valid JSON object. No markdown fences, no preamble."
+        )
+        raw = self.generate(prompt, system=json_system, max_tokens=max_tokens)
+        return _parse_json_with_repair(raw, self)
+
+
 def _strip_code_fences(text: str) -> str:
     text = text.strip()
     text = re.sub(r"^```(json)?", "", text.strip(), flags=re.IGNORECASE).strip()
@@ -135,14 +172,31 @@ def _parse_json_with_repair(raw: str, provider: LLMProvider, retries: int = 1) -
     raise ValueError("LLM did not return valid JSON after repair attempts.")
 
 
+_PROVIDERS = {
+    "anthropic": AnthropicProvider,
+    "openai": OpenAIProvider,
+}
+
+
 def get_llm_provider() -> LLMProvider:
     """Factory used by every service that needs an LLM."""
     if settings.DEMO_MODE:
         return DemoLLMProvider()
-    if settings.LLM_PROVIDER == "openai" and settings.OPENAI_API_KEY:
-        try:
-            return OpenAIProvider()
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("Falling back to DemoLLMProvider: %s", exc)
-            return DemoLLMProvider()
-    return DemoLLMProvider()
+
+    provider_cls = _PROVIDERS.get(settings.LLM_PROVIDER.lower())
+    if provider_cls is None:
+        if settings.LLM_PROVIDER.lower() != "demo":
+            logger.warning(
+                "Unknown LLM_PROVIDER=%r (expected one of: demo, %s). Using DemoLLMProvider.",
+                settings.LLM_PROVIDER,
+                ", ".join(sorted(_PROVIDERS)),
+            )
+        return DemoLLMProvider()
+
+    try:
+        return provider_cls()
+    except Exception as exc:  # noqa: BLE001
+        # A missing key or SDK must degrade to the offline provider rather
+        # than take the whole API down mid-demo.
+        logger.warning("Falling back to DemoLLMProvider: %s", exc)
+        return DemoLLMProvider()

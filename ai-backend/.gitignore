@@ -16,6 +16,9 @@ storage/uploads/*
 storage/chroma/*
 !storage/chroma/.gitkeep
 
+# Throwaway database/vector store created by the test suite
+tests/_tmp_storage/
+
 # OS
 .DS_Store
 Thumbs.db

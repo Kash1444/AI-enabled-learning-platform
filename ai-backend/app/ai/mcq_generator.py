@@ -64,9 +64,58 @@ class GeneratedMCQ(BaseModel):
         return v
 
 
+def _normalize_ws(text: str) -> str:
+    """Collapse newlines/runs of whitespace so an option is always one line."""
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def _dedupe_sentences(text: str) -> List[str]:
-    sentences = [s.strip() for s in _SENTENCE_SPLIT.split(text) if s.strip()]
-    return [s for s in sentences if 40 <= len(s) <= 240]
+    """
+    Split a chunk into sentences usable as quiz content.
+
+    Chunks overlap, so the first sentence of a chunk may be the tail of a
+    sentence that began in the previous one. Such fragments read as broken
+    English ("ariance relative to simple random sampling...") and must never
+    reach a learner as an answer option, so we require a sentence to begin
+    the way a real sentence does.
+    """
+    sentences = [_normalize_ws(s) for s in _SENTENCE_SPLIT.split(text) if s.strip()]
+    return [s for s in sentences if 40 <= len(s) <= 240 and _starts_like_a_sentence(s)]
+
+
+def _starts_like_a_sentence(sentence: str) -> bool:
+    first = sentence[0]
+    return first.isupper() or first.isdigit() or first == "["
+
+
+# Words too generic to make a fair cloze answer or a distinguishing distractor.
+_STOPWORDS = {
+    "about", "above", "after", "again", "against", "already", "also", "although",
+    "always", "among", "because", "been", "before", "being", "below", "between",
+    "both", "cannot", "could", "does", "doing", "during", "each", "either",
+    "every", "from", "further", "have", "having", "here", "however", "into",
+    "itself", "less", "like", "made", "make", "many", "more", "most", "much",
+    "must", "only", "other", "others", "over", "rather", "same", "several",
+    "should", "since", "some", "such", "than", "that", "their", "them", "then",
+    "there", "these", "they", "this", "those", "through", "thus", "under",
+    "until", "used", "using", "very", "were", "what", "when", "where", "which",
+    "while", "with", "within", "without", "would", "your",
+}
+
+_WORD_RE = re.compile(r"[A-Za-z][A-Za-z\-]{3,}")
+
+
+def _content_words(sentence: str) -> List[str]:
+    return [w for w in _WORD_RE.findall(sentence) if w.lower() not in _STOPWORDS]
+
+
+def _same_root(a: str, b: str) -> bool:
+    """Cheap singular/plural + inflection guard ('stratum' vs 'strata' stays
+    distinct, but 'sample' vs 'samples' collapses)."""
+    a, b = a.lower(), b.lower()
+    if a == b:
+        return True
+    return a[:5] == b[:5] and abs(len(a) - len(b)) <= 2
 
 
 def _candidate_pool(chunks: List[RetrievedChunk]) -> List[dict]:
@@ -80,6 +129,31 @@ def _candidate_pool(chunks: List[RetrievedChunk]) -> List[dict]:
             seen.add(key)
             pool.append({"sentence": sentence, "chunk_id": chunk.chunk_id})
     return pool
+
+
+def _term_document_frequency(pool: List[dict]) -> dict:
+    """How many sentences each content word appears in — used to pick the most
+    *distinctive* term in a sentence as the cloze answer."""
+    freq: dict = {}
+    for item in pool:
+        for word in {w.lower() for w in _content_words(item["sentence"])}:
+            freq[word] = freq.get(word, 0) + 1
+    return freq
+
+
+def _pick_cloze_term(sentence: str, freq: dict) -> Optional[str]:
+    """Pick the rarest (therefore most content-bearing) word in the sentence.
+    Ties break toward the longer word, then alphabetically, so the choice is
+    fully deterministic."""
+    candidates = {w for w in _content_words(sentence) if len(w) >= 5}
+    if not candidates:
+        return None
+    return sorted(candidates, key=lambda w: (freq.get(w.lower(), 0), -len(w), w.lower()))[0]
+
+
+def _blank_out(sentence: str, term: str) -> str:
+    """Replace the first whole-word occurrence of `term` with a blank."""
+    return re.sub(rf"\b{re.escape(term)}\b", "______", sentence, count=1)
 
 
 def generate_demo_mcqs(
@@ -110,54 +184,139 @@ def generate_demo_mcqs(
     indices = list(range(len(pool)))
     rng.shuffle(indices)
 
+    freq = _term_document_frequency(pool)
     questions: List[GeneratedMCQ] = []
-    used_correct = set()
-    difficulty_stub = {
+    used_correct: set = set()
+    used_terms: List[str] = []
+
+    for correct_idx in indices:
+        if len(questions) >= num_questions:
+            break
+        if correct_idx in used_correct:
+            continue
+        correct_item = pool[correct_idx]
+        used_correct.add(correct_idx)
+
+        mcq = _build_cloze_question(
+            pool,
+            correct_idx,
+            freq,
+            rng,
+            competency=competency,
+            used_terms=used_terms,
+        ) or _build_statement_question(
+            pool,
+            correct_idx,
+            rng,
+            competency=competency,
+            difficulty=difficulty,
+            source_label=source_label,
+        )
+        if mcq is not None:
+            questions.append(mcq)
+
+    if not questions:
+        raise ValueError("Could not generate any grounded questions from the supplied material.")
+    return questions
+
+
+def _build_cloze_question(
+    pool: List[dict],
+    correct_idx: int,
+    freq: dict,
+    rng: random.Random,
+    *,
+    competency: str,
+    used_terms: List[str],
+) -> Optional[GeneratedMCQ]:
+    """
+    Build a fill-in-the-blank question.
+
+    This tests whether the learner knows the key term rather than whether
+    they can spot which of four unrelated sentences came from the document,
+    and each question reads differently. The answer and every distractor are
+    words lifted from the material, so nothing is invented.
+    """
+    sentence = pool[correct_idx]["sentence"]
+    answer = _pick_cloze_term(sentence, freq)
+    if not answer or any(_same_root(answer, t) for t in used_terms):
+        return None
+
+    # Distractors: terms from other sentences that are not the answer and do
+    # not already appear in this sentence (which would make them defensible).
+    seen_in_sentence = {w.lower() for w in _content_words(sentence)}
+    candidates: List[str] = []
+    for i, item in enumerate(pool):
+        if i == correct_idx:
+            continue
+        for word in _content_words(item["sentence"]):
+            if len(word) < 5 or word.lower() in seen_in_sentence:
+                continue
+            if _same_root(word, answer) or any(_same_root(word, c) for c in candidates):
+                continue
+            candidates.append(word)
+    if len(candidates) < 3:
+        return None
+
+    rng.shuffle(candidates)
+    options = [answer] + candidates[:3]
+    order = list(range(4))
+    rng.shuffle(order)
+    shuffled = [options[i] for i in order]
+
+    used_terms.append(answer)
+    return GeneratedMCQ(
+        question=f"[{competency}] Complete the statement from the material: \"{_blank_out(sentence, answer)}\"",
+        options=shuffled,
+        correct_answer=order.index(0),
+        explanation=f'The material states: "{sentence}"',
+        source_chunk_id=pool[correct_idx]["chunk_id"],
+    )
+
+
+def _build_statement_question(
+    pool: List[dict],
+    correct_idx: int,
+    rng: random.Random,
+    *,
+    competency: str,
+    difficulty: str,
+    source_label: str,
+) -> Optional[GeneratedMCQ]:
+    """Fallback: pick the statement that genuinely comes from the material.
+    Used when a sentence has no distinctive term to blank out."""
+    correct_item = pool[correct_idx]
+    distractor_pool = [p for i, p in enumerate(pool) if i != correct_idx]
+    if len(distractor_pool) < 3:
+        return None
+
+    rng.shuffle(distractor_pool)
+    distractors = distractor_pool[:3]
+    options = [correct_item["sentence"]] + [d["sentence"] for d in distractors]
+    if len({o.strip().lower() for o in options}) != 4:
+        return None
+
+    order = list(range(4))
+    rng.shuffle(order)
+    shuffled = [options[i] for i in order]
+
+    stub = {
         "Easy": "Which of the following statements is mentioned in the material?",
         "Intermediate": "Based on the uploaded material, which statement is accurate?",
         "Advanced": "According to a detailed reading of the material, which statement correctly reflects its content?",
     }.get(difficulty, "Which of the following statements is mentioned in the material?")
 
-    attempts = 0
-    while len(questions) < num_questions and attempts < len(pool) * 2:
-        attempts += 1
-        correct_idx = indices[attempts % len(indices)]
-        if correct_idx in used_correct:
-            continue
-        correct_item = pool[correct_idx]
-
-        # pick 3 distractors from sentences that are NOT the correct one
-        distractor_pool = [p for i, p in enumerate(pool) if i != correct_idx]
-        if len(distractor_pool) < 3:
-            break
-        rng.shuffle(distractor_pool)
-        distractors = distractor_pool[:3]
-
-        options = [correct_item["sentence"]] + [d["sentence"] for d in distractors]
-        # shuffle option order, tracking correct index
-        order = list(range(4))
-        rng.shuffle(order)
-        shuffled_options = [options[i] for i in order]
-        correct_answer = order.index(0)
-
-        used_correct.add(correct_idx)
-        questions.append(
-            GeneratedMCQ(
-                question=f"[{competency}] {difficulty_stub}",
-                options=shuffled_options,
-                correct_answer=correct_answer,
-                explanation=(
-                    f"This statement appears directly in the uploaded material "
-                    f"('{source_label}'); the other options are drawn from unrelated "
-                    f"parts of the same document and do not answer the question."
-                ),
-                source_chunk_id=correct_item["chunk_id"],
-            )
-        )
-
-    if not questions:
-        raise ValueError("Could not generate any grounded questions from the supplied material.")
-    return questions
+    return GeneratedMCQ(
+        question=f"[{competency}] {stub}",
+        options=shuffled,
+        correct_answer=order.index(0),
+        explanation=(
+            f"This statement appears directly in the uploaded material "
+            f"('{source_label}'); the other options are drawn from unrelated "
+            f"parts of the same document and do not answer the question."
+        ),
+        source_chunk_id=correct_item["chunk_id"],
+    )
 
 
 def generate_llm_mcqs(

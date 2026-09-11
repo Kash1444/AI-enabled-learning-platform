@@ -29,7 +29,17 @@ _COLLECTION_NAME = "learning_materials"
 
 
 class _EmbeddingFunctionAdapter:
-    """Adapts our EmbeddingProvider to Chroma's EmbeddingFunction protocol."""
+    """
+    Adapts our EmbeddingProvider to Chroma's EmbeddingFunction protocol.
+
+    The protocol changed between chromadb 0.5.x and 1.x: 0.5.x only ever
+    called the object itself, while 1.x embeds *queries* through a separate
+    ``embed_query()`` hook (so a model may encode questions and passages
+    differently) and asks the function to describe itself via ``name()`` /
+    ``get_config()``. We implement the full 1.x surface here and keep
+    ``__call__`` as the single source of truth, which leaves the adapter
+    working on both major versions.
+    """
 
     def __init__(self, provider: EmbeddingProvider) -> None:
         self._provider = provider
@@ -37,8 +47,34 @@ class _EmbeddingFunctionAdapter:
     def __call__(self, input: Sequence[str]) -> List[List[float]]:  # noqa: A002
         return self._provider.embed(list(input))
 
-    def name(self) -> str:  # some chromadb versions expect this
+    # -- chromadb >= 1.0 ------------------------------------------------
+    # Our providers embed queries and documents with the same model, so
+    # both hooks delegate to __call__ rather than diverging.
+    def embed_query(self, input: Sequence[str]) -> List[List[float]]:  # noqa: A002
+        return self(input)
+
+    def embed_documents(self, input: Sequence[str]) -> List[List[float]]:  # noqa: A002
+        return self(input)
+
+    @staticmethod
+    def name() -> str:  # chromadb 1.x calls this unbound; 0.5.x expects a str
         return "custom-embedding-adapter"
+
+    def get_config(self) -> Dict[str, Any]:
+        return {}
+
+    @staticmethod
+    def build_from_config(config: Dict[str, Any]) -> "_EmbeddingFunctionAdapter":
+        return _EmbeddingFunctionAdapter(get_embedding_provider())
+
+    def default_space(self) -> str:
+        return "cosine"
+
+    def supported_spaces(self) -> List[str]:
+        return ["cosine", "l2", "ip"]
+
+    def is_legacy(self) -> bool:
+        return False
 
 
 class RAGPipeline:

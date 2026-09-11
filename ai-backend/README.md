@@ -8,10 +8,9 @@ built for the Ministry of Statistics and Programme Implementation (MoSPI),
 Data Informatics & Innovation Division (DIID).
 
 This backend is **additive** — it does not modify, rename, or replace any
-existing frontend file. It is designed to be copied into the existing
-repository at `AI-enabled-learning-platform/ai-backend/` and consumed by
-the existing React frontend through the service files in
-`frontend-integration/` (see that folder's own README).
+existing frontend file. It is consumed by the existing React frontend
+through the service files already present in `frontend/src/services/`
+(see section 14).
 
 ---
 
@@ -72,13 +71,13 @@ Engine            Engine      Engine            Engine            Service
       │               │      (mock/real)              │              lookup
       │               │                               ▼
       │               │                          LLM Provider
-      │               │                          (Demo / OpenAI)
+      │               │                     (Demo / Claude / OpenAI)
       ▼               ▼
      SQLite database (SQLAlchemy) — employees, roles, competency scores,
      skill gaps, materials, chunks, assessments, questions, attempts
 ```
 
-Every box with a "mock/real" or "Demo/OpenAI" label is an **abstraction**
+Every box with a "mock/real" or "Demo/Claude/OpenAI" label is an **abstraction**
 (`app/ai/llm_provider.py`, `app/ai/embeddings.py`,
 `app/integrations/{igot,nssta}.py`) — swapping in real credentials never
 requires touching the engines above them.
@@ -107,8 +106,8 @@ Uploaded file (PDF/DOCX/PPTX/TXT)
         │  app/ai/mcq_generator.py
         ▼
   Grounded MCQs (LLM-assisted + Pydantic-validated, OR deterministic
-  extractive generator in DEMO_MODE — options are always real sentences
-  from the material, so nothing is hallucinated)
+  extractive generator in DEMO_MODE — the answer and every distractor are
+  lifted verbatim from the material, so nothing is hallucinated)
 ```
 
 ---
@@ -135,11 +134,13 @@ ai-backend/
 │   ├── uploads/                    uploaded files land here
 │   └── chroma/                     ChromaDB persistent store
 ├── tests/                          pytest suite (no API key required)
-├── requirements.txt                full install (RAG + LLM + embeddings)
+├── requirements.txt                full install (RAG + LLM SDKs)
 ├── requirements-minimal.txt        lightweight offline-only install
 ├── .env.example
 ├── .gitignore
-├── seed.py
+├── run.py                          start the server (reads HOST/PORT)
+├── seed.py                         load demo employees/roles/competencies
+├── smoke_test.py                   end-to-end check vs a running server
 └── README.md
 ```
 
@@ -148,16 +149,13 @@ ai-backend/
 ## 5–11. Installation (Windows 11 / PowerShell)
 
 ### Prerequisites
-- **Python 3.11 or 3.12** (tested with 3.12)
+- **Python 3.11 – 3.14** (verified on 3.14 / Windows 11)
 - Git (to clone/pull the repo you already have)
 
 ### Step by step
 
 ```powershell
-# From the repository root
-cd AI-enabled-learning-platform
-# Place this ai-backend/ folder here if you haven't already, then:
-cd ai-backend
+cd AI-enabled-learning-platform\ai-backend
 
 # 1. Create a virtual environment
 python -m venv .venv
@@ -167,25 +165,46 @@ python -m venv .venv
 
 # 3. Install dependencies
 pip install -r requirements.txt
-# --- OR, for a faster, fully-offline install with no torch/openai ---
+# --- OR, for a faster, fully-offline install with no LLM SDKs ---
 # pip install -r requirements-minimal.txt
 
 # 4. Configure environment variables
 copy .env.example .env
-# Edit .env if you want to change ports/CORS/etc. Defaults work out of the box.
+# Defaults work out of the box. Change PORT here if 8000 is taken.
 
 # 5. Seed demo data (3 employees, roles, competency scores, skill gaps)
 python seed.py
 
 # 6. Start the API
-uvicorn app.main:app --reload
+python run.py          # reads HOST/PORT from .env
+# (equivalent to: uvicorn app.main:app --reload)
 ```
 
-The API is now running at **http://localhost:8000**.
+The API is now running at **http://localhost:8000** —
+docs at **http://localhost:8000/docs**.
 
-> If you installed `requirements-minimal.txt`, also set in `.env`:
-> `EMBEDDING_PROVIDER=hash` (RAG still works, using the dependency-free
-> hashing embedding instead of downloading a sentence-transformers model).
+Then verify it end to end, with the server still running:
+
+```powershell
+python smoke_test.py   # drives every endpoint the React frontend calls
+pytest -q              # unit + integration suite
+```
+
+> **VS Code**: select `ai-backend/.venv` as the interpreter
+> (Ctrl+Shift+P → "Python: Select Interpreter"), otherwise the editor
+> reports the installed packages as missing.
+
+### A note on embeddings
+
+`sentence-transformers` is **optional** and is not installed by default: it
+requires torch, which has no Python 3.14 wheels yet. Without it,
+`EMBEDDING_PROVIDER=auto` falls back to the dependency-free hashing
+embedder, and RAG works end to end — retrieval ranking is just less
+semantic. On Python ≤ 3.12, uncomment the pinned line in
+`requirements.txt` for better retrieval quality.
+
+If you installed `requirements-minimal.txt`, set `EMBEDDING_PROVIDER=hash`
+in `.env` to skip the import attempt entirely.
 
 ---
 
@@ -201,10 +220,21 @@ external credentials:
 | Recommendations                | Ranked from mock iGOT/NSSTA data                   | Ranked from real providers if configured   |
 | MCQ generation (with material) | Extractive, zero-hallucination generator            | LLM-grounded, falls back to extractive on any validation failure |
 | MCQ generation (no material)   | Catalog-derived domain-membership quiz              | Same                                        |
-| AI Assistant                   | Templated but data-real answers                     | Real LLM answers, still RAG-grounded when a material is given |
+| AI Assistant (with material)    | Extractive answer quoted from the retrieved chunks, with citations | Real LLM answer, still RAG-grounded and cited |
+| AI Assistant (profile question) | Answered from the deterministic engines (identical either way) | Same |
 
-Set `DEMO_MODE=false` and `LLM_PROVIDER=openai` with a valid
-`OPENAI_API_KEY` in `.env` to switch on real LLM generation.
+To switch on real LLM generation, set in `.env`:
+
+```env
+DEMO_MODE=false
+LLM_PROVIDER=anthropic     # or: openai
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-sonnet-5
+```
+
+A missing key, an uninstalled SDK, or an unrecognised `LLM_PROVIDER` logs a
+warning and falls back to the offline provider rather than taking the API
+down — a demo never dies because of a credential problem.
 
 ---
 
@@ -312,7 +342,7 @@ Content-Type: application/json
 pytest -q
 ```
 
-All 23+ tests pass **without any API key**: DEMO_MODE and the hash
+All 40 tests pass **without any API key**: DEMO_MODE and the hash
 embedding provider are forced on in `tests/conftest.py`, and a temporary
 SQLite database is used so your seeded/demo data is never touched.
 
@@ -324,26 +354,60 @@ generate→evaluate assessment flow (including that the learner-facing GET
 never leaks the answer key), and document processing (TXT/DOCX/PPTX
 extraction, cleaning, chunking).
 
+`tests/test_mcq_quality.py`, `tests/test_rag_and_llm.py` and
+`tests/test_assistant.py` additionally pin behaviour that has broken
+before: chunks must never start mid-word (those fragments used to be
+served to learners as answer options), generated questions must have
+distinct stems, Chroma retrieval must work through the `embed_query()`
+hook that chromadb 1.x requires, the assistant must answer RAG questions
+by quoting the material instead of returning a placeholder, and an
+unknown/unconfigured LLM provider must degrade to the offline provider
+instead of erroring.
+
+### Live end-to-end check
+
+`pytest` drives the app in-process. To check the *deployed* wiring — port,
+CORS, seed data, persisted vector store — run the smoke test against a
+running server:
+
+```powershell
+python run.py          # terminal 1
+python smoke_test.py   # terminal 2
+```
+
+It walks the same 14 endpoints the React pages call and exits non-zero on
+any failure.
+
 ---
 
 ## 14. Frontend integration
 
-See `frontend-integration/README.md` (sibling folder to `ai-backend/` in
-the delivered ZIP) for the exact replacement code for
-`frontend/src/services/{competencyService,assessmentService,courseService}.js`
-and a step-by-step wiring example. In short:
+The service layer is already in place at `frontend/src/services/`:
 
-```powershell
-copy frontend-integration\.env.example ..\frontend\.env
-copy frontend-integration\src\services\*.js ..\frontend\src\services\
+| File | Endpoints it wraps |
+|---|---|
+| `apiClient.js` | shared fetch wrapper, reads `VITE_API_URL` |
+| `competencyService.js` | `/api/competency/*` |
+| `courseService.js` | `/api/recommendations/*` |
+| `assessmentService.js` | `/api/materials/*`, `/api/assessment/*` |
+| `assistantService.js` | `/api/assistant/chat` |
+
+`frontend/.env` points those at this backend:
+
+```env
+VITE_API_URL=http://localhost:8000
 ```
 
-Then start both servers:
+**The origin only — no `/api` suffix.** `apiClient.js` prefixes every path
+with `/api` itself, so including it here produces `/api/api/...` and every
+call 404s.
+
+Start both servers:
 ```powershell
 # Terminal 1
 cd ai-backend
 .venv\Scripts\activate
-uvicorn app.main:app --reload
+python run.py
 
 # Terminal 2
 cd frontend
@@ -352,6 +416,16 @@ npm run dev
 
 CORS is pre-configured for `http://localhost:5173` (Vite's default dev
 port) via `CORS_ORIGINS` in `.env`.
+
+**The frontend does not currently call this backend at all.** The service
+files above are complete, but `AIAssistant.jsx` and `GenerateAssessment.jsx`
+— the only two pages that import them — are not registered in
+`routes/AppRoutes.jsx`, so the bundler drops them and `apiClient.js` never
+ships. Every other page renders the static fixtures in `frontend/src/data/`.
+
+Nothing here needs to change to fix that; see "Frontend wiring status" in
+the root [`README.md`](../README.md) for the exact list. The backend side is
+verified independently by `smoke_test.py`.
 
 ---
 
@@ -373,6 +447,17 @@ index. The LLM path asks for strict JSON and uses the LLM provider's own
 repair loop on malformed output; if validation still fails, it
 **automatically falls back** to the deterministic extractive generator
 rather than ever returning a broken or unsupported question.
+
+The deterministic generator builds **fill-in-the-blank** questions: it
+picks the most distinctive term in a sentence (the one appearing in the
+fewest other sentences), blanks it, and draws the three distractors from
+terms elsewhere in the same document — skipping any that already appear in
+the sentence or share a root with the answer. Each question therefore reads
+differently and tests recall of the material rather than which of four
+unrelated sentences came from the document. When a sentence has no
+distinctive term to blank, it falls back to statement-selection. Output is
+seeded from the material and competency, so the same upload always produces
+the same quiz.
 
 ### Competency engine
 `app/services/competency_engine.py` — see section 3 of this README and

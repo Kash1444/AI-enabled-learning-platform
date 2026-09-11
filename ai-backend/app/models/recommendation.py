@@ -7,7 +7,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.core.database import Base
+from app.core.database import Base, utcnow
 
 
 class LearningResource(Base):
@@ -47,7 +47,7 @@ class Recommendation(Base):
     relevance_score: Mapped[float] = mapped_column(Float)
     priority: Mapped[str] = mapped_column(String(20))
     reason: Mapped[str] = mapped_column(Text, default="")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
 class LearningProgress(Base):
@@ -60,4 +60,4 @@ class LearningProgress(Base):
     resource_id: Mapped[str] = mapped_column(ForeignKey("learning_resources.id"))
     progress_pct: Mapped[int] = mapped_column(Integer, default=0)
     status: Mapped[str] = mapped_column(String(20), default="Not Started")  # Not Started|In Progress|Completed
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

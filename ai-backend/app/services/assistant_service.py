@@ -23,7 +23,7 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from app.ai.llm_provider import get_llm_provider
+from app.ai.llm_provider import DemoLLMProvider, get_llm_provider
 from app.ai.rag import get_rag_pipeline
 from app.models.employee import Employee
 from app.models.material import LearningMaterial
@@ -92,6 +92,14 @@ def _answer_with_rag(db: Session, message: str, material_id: str) -> tuple[str, 
 
     context = "\n\n".join(f"[{i+1}] {h['text']}" for i, h in enumerate(hits))
     llm = get_llm_provider()
+
+    # The offline demo provider cannot read `context`, so asking it to answer
+    # would return a generic placeholder and make a working retrieval look
+    # broken. Answer extractively from the retrieved chunks instead: the text
+    # is quoted from the material, so it stays grounded and citable.
+    if isinstance(llm, DemoLLMProvider):
+        return _extractive_answer(message, hits, material.title), _build_sources(material, hits), True
+
     system = (
         "You are a learning assistant for India's Official Statistical System. Answer the "
         "learner's question using ONLY the provided source material excerpts. If the "
@@ -101,21 +109,85 @@ def _answer_with_rag(db: Session, message: str, material_id: str) -> tuple[str, 
     )
     prompt = f"Source material excerpts:\n{context}\n\nLearner question: {message}\n\nAnswer:"
     answer = llm.generate(prompt, system=system, max_tokens=600)
+    return answer, _build_sources(material, hits), True
 
-    sources = [
+
+def _build_sources(material: LearningMaterial, hits: List[dict]) -> List[SourceRef]:
+    return [
         SourceRef(
-            material_id=material_id,
+            material_id=material.id,
             material_title=material.title,
             chunk_id=h["chunk_id"],
             text_preview=(h["text"][:220] + ("..." if len(h["text"]) > 220 else "")),
         )
         for h in hits
     ]
-    return answer, sources, True
+
+
+_SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
+_QUERY_STOPWORDS = {
+    "what", "which", "when", "where", "does", "do", "is", "are", "the", "a",
+    "an", "of", "for", "in", "on", "to", "and", "or", "how", "why", "can",
+    "explain", "tell", "me", "about", "that", "this", "it",
+}
+
+
+def _extractive_answer(message: str, hits: List[dict], material_title: str) -> str:
+    """
+    Answer a question using only sentences that appear in the retrieved
+    chunks, ranked by overlap with the learner's question.
+
+    This is deliberately extractive rather than generative: in DEMO_MODE
+    there is no language model available, and quoting the material is both
+    honest and verifiable against the citations returned alongside it.
+    """
+    query_terms = {
+        w for w in re.findall(r"[a-z][a-z\-]{2,}", message.lower()) if w not in _QUERY_STOPWORDS
+    }
+
+    scored: List[tuple] = []
+    seen: set = set()
+    for hit in hits:
+        for raw in _SENTENCE_SPLIT.split(hit["text"]):
+            sentence = re.sub(r"\s+", " ", raw).strip()
+            if len(sentence) < 40 or sentence.lower() in seen:
+                continue
+            seen.add(sentence.lower())
+            words = set(re.findall(r"[a-z][a-z\-]{2,}", sentence.lower()))
+            overlap = len(query_terms & words)
+            if overlap:
+                scored.append((overlap, -len(sentence), sentence))
+
+    if not scored:
+        return (
+            f"I found relevant sections in '{material_title}' but nothing that directly "
+            f"answers that question. The cited excerpts below are the closest matches — "
+            f"try rephrasing using terms from the material."
+        )
+
+    scored.sort(reverse=True)
+    best = [s for _, _, s in scored[:3]]
+    body = "\n".join(f"- {s}" for s in best)
+    return (
+        f"Here is what '{material_title}' says about that:\n\n{body}\n\n"
+        f"(Answered by quoting the uploaded material directly — DEMO_MODE is on, so no "
+        f"language model was used to rephrase it. Sources are cited below.)"
+    )
 
 
 def _answer_generally(message: str) -> str:
     llm = get_llm_provider()
+    if isinstance(llm, DemoLLMProvider):
+        return (
+            "I can answer two kinds of question with real data in this demo:\n\n"
+            "- **Your own profile** — ask about your competencies, skill gaps, scores or "
+            "what you should learn next, and I'll answer from your assessment results.\n"
+            "- **An uploaded material** — open a learning material and ask about its "
+            "content, and I'll answer using retrieval over that document, with citations.\n\n"
+            "For open-ended questions outside those two, a language model is needed. "
+            "DEMO_MODE is currently on, so no model is configured — set `DEMO_MODE=false` "
+            "with an API key in the backend `.env` to enable free-form answers."
+        )
     system = (
         "You are a learning assistant for India's Official Statistical System training "
         "platform. Give helpful, general study guidance. Do NOT state specific facts about "

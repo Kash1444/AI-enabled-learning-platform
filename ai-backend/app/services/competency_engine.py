@@ -22,12 +22,12 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from datetime import datetime
 from typing import Dict, List
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from app.core.database import utcnow
 from app.data.competencies import domain_for_skill
 from app.data.roles import get_role_requirements
 from app.models.competency import CompetencyScore
@@ -85,7 +85,7 @@ def score_assessment(answers: List[AnswerInput]) -> Dict[str, dict]:
 
 def persist_scores(db: Session, employee_id: str, scored: Dict[str, dict], source: str = "assessment") -> None:
     """Insert a new CompetencyScore row per skill (append-only history)."""
-    now = datetime.utcnow()
+    now = utcnow()
     for skill, data in scored.items():
         db.add(
             CompetencyScore(

@@ -98,7 +98,19 @@ The platform addresses the challenge of helping government officials identify th
 
 ### Backend
 
-The AI services will be exposed through APIs and integrated with the main application backend.
+* Python 3.11–3.14
+* FastAPI (REST API, OpenAPI/Swagger docs)
+* Uvicorn (ASGI server)
+* SQLAlchemy ORM
+* SQLite (default; swap `DATABASE_URL` for PostgreSQL)
+* Pydantic v2 (request/response validation)
+* ChromaDB (persistent vector store)
+* PyMuPDF / python-docx / python-pptx (document extraction)
+* pytest (test suite)
+
+The AI engines and the application API are a single FastAPI service in
+`ai-backend/`, consumed by the React frontend through
+`frontend/src/services/*.js`.
 
 ### Future Integrations
 
@@ -161,7 +173,24 @@ The platform is designed around multiple competency areas:
 ```text
 AI-enabled-learning-platform/
 │
-├── frontend/          # Web application
+├── frontend/          # React + Vite web application
+│   └── src/services/  # HTTP layer that talks to the backend
+│
+├── ai-backend/        # FastAPI backend (API + AI engines + RAG)
+│   ├── app/
+│   │   ├── api/           # HTTP routes
+│   │   ├── services/      # competency, skill-gap, recommendation,
+│   │   │                  # assessment, adaptive-learning, assistant engines
+│   │   ├── ai/            # LLM provider, embeddings, RAG, MCQ generator
+│   │   ├── integrations/  # iGOT Karmayogi / NSSTA providers
+│   │   ├── processors/    # PDF/DOCX/PPTX/TXT extraction + chunking
+│   │   ├── models/        # SQLAlchemy ORM models
+│   │   ├── schemas/       # Pydantic request/response models
+│   │   └── core/          # config, database, security
+│   ├── tests/         # pytest suite (no API key required)
+│   ├── run.py         # start the server
+│   ├── seed.py        # seed demo employees/roles/competencies
+│   └── smoke_test.py  # end-to-end check against a running server
 │
 ├── HowTo.md           # Development/setup notes
 │
@@ -176,8 +205,8 @@ AI-enabled-learning-platform/
 
 Make sure you have installed:
 
-* Node.js
-* npm
+* Node.js and npm
+* Python 3.11 or newer
 * Git
 
 ### Clone the Repository
@@ -187,7 +216,40 @@ git clone https://github.com/Kash1444/AI-enabled-learning-platform.git
 cd AI-enabled-learning-platform
 ```
 
+### Run the Backend
+
+The backend runs entirely offline in `DEMO_MODE` — **no API keys needed**.
+
+```powershell
+cd ai-backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+python seed.py       # demo employees, roles, competencies, skill gaps
+python run.py
+```
+
+The API starts on the port set by `PORT` in `ai-backend/.env`, with
+interactive docs at `/docs`.
+
+> **This checkout is configured for port 8001**, not the usual 8000,
+> because 8000 was already taken on the development machine. Both
+> `ai-backend/.env` (`PORT=8001`) and `frontend/.env`
+> (`VITE_API_URL=http://localhost:8001`) are set to match. To move back to
+> 8000, change the port in **both** files together — they must agree or
+> every request fails with a connection error.
+
+Verify everything works, with the server running:
+
+```powershell
+python smoke_test.py   # exercises every endpoint the frontend calls
+pytest -q              # unit/integration suite
+```
+
 ### Run the Frontend
+
+In a second terminal:
 
 ```bash
 cd frontend
@@ -201,22 +263,118 @@ The development server will provide a local URL, typically:
 http://localhost:5173
 ```
 
+`frontend/.env` sets `VITE_API_URL` to the backend origin (no `/api`
+suffix — `src/services/apiClient.js` adds that itself).
+
+### Demo Logins
+
+| Role     | Email               | Password       |
+|----------|---------------------|----------------|
+| Employee | employee@demo.com   | Employee@123   |
+| Trainer  | trainer@demo.com    | Trainer@123    |
+| Admin    | admin@demo.com      | Admin@123      |
+
+## API Reference
+
+Full interactive docs at `http://localhost:8000/docs` while the backend is
+running. Detailed engine documentation is in
+[`ai-backend/README.md`](ai-backend/README.md).
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET  | `/api/health` | Health check; reports `DEMO_MODE` |
+| GET  | `/api/competency/{employee_id}` | Competency overview (overall %, per-domain) |
+| GET  | `/api/competency/{employee_id}/gaps` | Skill-gap analysis with priorities |
+| POST | `/api/competency/assess` | Score assessment answers deterministically |
+| GET  | `/api/recommendations/{employee_id}` | Ranked personalized recommendations |
+| GET  | `/api/recommendations/{employee_id}/igot` | iGOT Karmayogi course recommendations |
+| GET  | `/api/recommendations/{employee_id}/nssta` | NSSTA TPAC programme recommendations |
+| POST | `/api/materials/upload` | Upload PDF/DOCX/PPTX/TXT (multipart) |
+| GET  | `/api/materials` | List uploaded materials |
+| GET  | `/api/materials/{material_id}` | Material detail + extracted chunk preview |
+| POST | `/api/assessment/generate` | Generate an MCQ assessment (RAG-grounded) |
+| GET  | `/api/assessment/{assessment_id}` | Fetch for a learner (answer key withheld) |
+| POST | `/api/assessment/evaluate` | Grade answers, update competency, suggest next level |
+| POST | `/api/assistant/chat` | AI learning assistant (RAG / profile / general) |
+
+### AI configuration
+
+`DEMO_MODE=true` (the default) runs the entire platform — scoring, gap
+analysis, recommendations, RAG, MCQ generation, assistant — with **no
+external credentials and no network calls**. Competency scoring and gap
+analysis are deterministic formulas, so they are identical either way.
+
+To enable LLM-written questions and free-form assistant answers, set in
+`ai-backend/.env`:
+
+```env
+DEMO_MODE=false
+LLM_PROVIDER=anthropic     # or: openai
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-sonnet-5
+```
+
+Generated questions are validated before they reach a learner; anything
+malformed or ungrounded falls back to the deterministic extractive
+generator rather than surfacing a broken question.
+
 ## Development Roadmap
 
 * [x] Initial frontend development
-* [ ] AI competency assessment
-* [ ] Automated skill-gap analysis
-* [ ] AI-powered learning recommendations
-* [ ] RAG-based learning content processing
-* [ ] AI-generated MCQs and quizzes
-* [ ] Automated assessment and feedback
-* [ ] Learner competency tracking
-* [ ] iGOT Karmayogi integration
-* [ ] NSSTA training programme integration
+* [x] AI competency assessment
+* [x] Automated skill-gap analysis
+* [x] AI-powered learning recommendations
+* [x] RAG-based learning content processing
+* [x] AI-generated MCQs and quizzes
+* [x] Automated assessment and feedback
+* [x] Learner competency tracking
+* [~] iGOT Karmayogi integration — provider interface + mock data; real API
+  needs credentials (`IGOT_API_BASE_URL` / `IGOT_API_KEY`)
+* [~] NSSTA training programme integration — same, mock data for now
 * [ ] Administrator analytics
 * [ ] Multilingual learning support
 * [ ] Secure authentication and role-based access control
 * [ ] Cloud deployment
+
+### Frontend wiring status
+
+The backend implements, serves and verifies every feature above. The
+frontend is **not yet wired to it** — as the app currently stands it makes
+no HTTP calls to the backend at all. Closing that gap is the next task, and
+none of it requires backend changes.
+
+`src/services/` is a complete, working HTTP layer for every endpoint. What
+is missing is the wiring:
+
+1. **Two pages already call the services but are unreachable.**
+   `pages/employee/AIAssistant.jsx` (`POST /api/assistant/chat`) and
+   `pages/trainer/GenerateAssessment.jsx` (`POST /api/assessment/generate`)
+   are never imported by `routes/AppRoutes.jsx`, so the bundler drops them.
+   They need routes before they do anything.
+
+2. **The sidebar links to routes that don't exist.**
+   `components/layout/Sidebar.jsx` links to `/employee/quizzes`,
+   `/employee/results` and `/employee/ai-assistant`. `AppRoutes.jsx`
+   defines none of them, so the `*` catch-all sends the user back to the
+   login page.
+
+3. **`GenerateAssessment.jsx` imports `./GenerateAssessment.css`, which
+   does not exist.** The build only survives because nothing imports the
+   page. Adding a route for it fails the build until that file is created.
+
+4. **`services/authService.js` imports `./api.js`, which does not exist.**
+   Harmless today (nothing imports it); it breaks the build the moment
+   something does. Login is currently hardcoded in `pages/Login.jsx`
+   against `localStorage` — there is no backend auth endpoint.
+
+5. **The remaining pages render static fixtures** from `src/data/` instead
+   of calling the services — the employee dashboard, competencies, skill
+   gaps, learning path, iGOT and NSSTA pages. Switching one over is a
+   two-line change; the header comment in
+   `src/services/competencyService.js` shows the exact before/after.
+
+6. **Many files are still empty**, including every admin page, all chart
+   components, and most shared/common components.
 
 ## Vision
 

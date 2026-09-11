@@ -18,10 +18,15 @@ settings = get_settings()
 
 
 def extract_pdf(path: Path) -> str:
-    import fitz  # PyMuPDF
+    # PyMuPDF renamed its module from `fitz` to `pymupdf`; `fitz` still works
+    # but warns on import and is slated for removal.
+    try:
+        import pymupdf
+    except ImportError:  # pragma: no cover - PyMuPDF < 1.24
+        import fitz as pymupdf
 
     text_parts: List[str] = []
-    with fitz.open(path) as doc:
+    with pymupdf.open(path) as doc:
         for page in doc:
             text_parts.append(page.get_text())
     return "\n".join(text_parts)
@@ -120,5 +125,20 @@ def chunk_text(
             chunks.append(chunk)
         if end >= length:
             break
-        start = max(end - overlap, start + 1)
+
+        next_start = max(end - overlap, start + 1)
+        # Stepping back by `overlap` characters usually lands in the middle of
+        # a word, which would make the next chunk open with a fragment like
+        # "ariance relative to...". Those fragments then surface verbatim as
+        # MCQ options and RAG citations, so snap forward to the next whole
+        # word. `next_start > start` already holds, so progress is guaranteed.
+        if next_start < length and not text[next_start - 1].isspace():
+            probe = next_start
+            while probe < length and not text[probe].isspace():
+                probe += 1
+            while probe < length and text[probe].isspace():
+                probe += 1
+            if probe < length:
+                next_start = probe
+        start = next_start
     return chunks

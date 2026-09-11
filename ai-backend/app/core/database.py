@@ -12,6 +12,7 @@ No application code outside this file needs to change for that swap.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Generator
 
 from sqlalchemy import create_engine
@@ -20,6 +21,18 @@ from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 from app.core.config import BASE_DIR, get_settings
 
 settings = get_settings()
+
+
+def utcnow() -> datetime:
+    """
+    Current UTC time as a naive datetime.
+
+    Replaces `datetime.utcnow()`, which is deprecated and scheduled for
+    removal. The timezone is stripped again on purpose: every timestamp
+    column here is a naive `DateTime`, and returning an aware value would
+    append a "+00:00" offset to API responses that previously had none.
+    """
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 _connect_args = {}
 if settings.DATABASE_URL.startswith("sqlite"):

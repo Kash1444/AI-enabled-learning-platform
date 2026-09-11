@@ -8,7 +8,7 @@ from typing import List
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.database import Base
+from app.core.database import Base, utcnow
 
 
 class Role(Base):
@@ -54,9 +54,9 @@ class Employee(Base):
     location: Mapped[str] = mapped_column(String(120), default="")
     experience_years: Mapped[int] = mapped_column(Integer, default=0)
     education: Mapped[str] = mapped_column(String(200), default="")
-    joining_year: Mapped[int] = mapped_column(Integer, default=datetime.utcnow().year)
+    joining_year: Mapped[int] = mapped_column(Integer, default=utcnow().year)
 
     role_id: Mapped[int | None] = mapped_column(ForeignKey("roles.id"), nullable=True)
     role: Mapped["Role"] = relationship(back_populates="employees")
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

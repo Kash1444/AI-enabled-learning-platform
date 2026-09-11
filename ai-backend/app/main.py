@@ -11,6 +11,7 @@ See README.md for full setup instructions (Windows PowerShell included).
 from __future__ import annotations
 
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -26,7 +27,20 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Create tables before the first request is served."""
+    init_db()
+    logger.info(
+        "Database initialized. DEMO_MODE=%s, LLM_PROVIDER=%s",
+        settings.DEMO_MODE,
+        settings.LLM_PROVIDER,
+    )
+    yield
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title=settings.APP_NAME,
     description=(
         "AI layer for the AI-enabled Learning Platform (SIH 2026, Problem Statement 26101). "
@@ -72,12 +86,6 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": "An unexpected server error occurred."},
     )
-
-
-@app.on_event("startup")
-def on_startup() -> None:
-    init_db()
-    logger.info("Database initialized. DEMO_MODE=%s, LLM_PROVIDER=%s", settings.DEMO_MODE, settings.LLM_PROVIDER)
 
 
 @app.get("/api/health", tags=["Health"], summary="Health check")

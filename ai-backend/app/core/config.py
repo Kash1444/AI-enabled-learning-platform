@@ -35,6 +35,12 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     API_PREFIX: str = "/api"
 
+    # Where `python run.py` binds. Port 8000 is the conventional default, but
+    # it is overridable because it is a popular port that other local
+    # services (Splunk, Airflow, Django) often already hold.
+    HOST: str = "127.0.0.1"
+    PORT: int = 8000
+
     # DEMO_MODE=true => the whole platform works with zero external
     # credentials (no OpenAI key, no live iGOT/NSSTA API). This is the
     # safety net for the SIH demo. DEMO_MODE=false switches on the real
@@ -70,7 +76,9 @@ class Settings(BaseSettings):
     # ---------------------------------------------------------------
     # LLM provider
     # ---------------------------------------------------------------
-    LLM_PROVIDER: str = "demo"  # demo | openai
+    LLM_PROVIDER: str = "demo"  # demo | anthropic | openai
+    ANTHROPIC_API_KEY: str = ""
+    ANTHROPIC_MODEL: str = "claude-sonnet-5"
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-4o-mini"
     OPENAI_BASE_URL: str = "https://api.openai.com/v1"

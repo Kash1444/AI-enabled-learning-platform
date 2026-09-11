@@ -7,7 +7,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.database import Base
+from app.core.database import Base, utcnow
 
 
 class Assessment(Base):
@@ -23,7 +23,7 @@ class Assessment(Base):
     material_id: Mapped[str | None] = mapped_column(String(40), nullable=True)
     generated_by: Mapped[str] = mapped_column(String(20), default="demo")  # demo|llm
     created_for_employee: Mapped[str | None] = mapped_column(String(40), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     questions: Mapped[list["Question"]] = relationship(
         back_populates="assessment", cascade="all, delete-orphan", order_by="Question.order_index"
@@ -65,4 +65,4 @@ class AssessmentAttempt(Base):
     competency_after: Mapped[float] = mapped_column(Float, default=0.0)
     feedback: Mapped[str] = mapped_column(Text, default="")
     next_difficulty: Mapped[str] = mapped_column(String(20), default="Intermediate")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
